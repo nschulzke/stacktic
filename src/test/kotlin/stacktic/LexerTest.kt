@@ -7,7 +7,7 @@ class LexerTest {
     @Test
     fun `lexes a series of symbols`() {
         val source = "a series of symbols"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 SymbolToken("a"),
@@ -24,7 +24,7 @@ class LexerTest {
         val source = """
             "a series" "of strings"
         """.trimIndent()
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 StringToken("\"a series\""),
@@ -39,7 +39,7 @@ class LexerTest {
         val source = """
             "a series" "of strings" a series of symbols
         """.trimIndent()
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 StringToken("\"a series\""),
@@ -56,7 +56,7 @@ class LexerTest {
     @Test
     fun `lexes a series of integers`() {
         val source = "1 2 3 4 5"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 IntegerToken("1"),
@@ -72,7 +72,7 @@ class LexerTest {
     @Test
     fun `lexes a series of big integers`() {
         val source = "1000000000 10000000000 100000000000 1000000000000 10000000000000"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 IntegerToken("1000000000"),
@@ -88,7 +88,7 @@ class LexerTest {
     @Test
     fun `lexes a series of doubles`() {
         val source = "1.0 2.0 3.0 4.0 5.0"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 DoubleToken("1.0"),
@@ -104,7 +104,7 @@ class LexerTest {
     @Test
     fun `lexes a series of big doubles`() {
         val source = "1000000000.0 10000000000.0 100000000000.0 1000000000000.0 10000000000000.0"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 DoubleToken("1000000000.0"),
@@ -120,7 +120,7 @@ class LexerTest {
     @Test
     fun `lexes a series of big doubles with lots of decimals`() {
         val source = "1000000000.123456789 10000000000.123456789 100000000000.123456789 1000000000000.123456789 10000000000000.123456789"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 DoubleToken("1000000000.123456789"),
@@ -136,7 +136,7 @@ class LexerTest {
     @Test
     fun `symbols may contain special characters`() {
         val source = "a-b_c.d_e"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 SymbolToken("a-b_c.d_e")
@@ -148,7 +148,7 @@ class LexerTest {
     @Test
     fun `math symbols are interpreted as symbols`() {
         val source = "* / - +"
-        val tokens = Lexer(source.byteInputStream()).readLine()
+        val tokens = Lexer().read(source)
         assertEquals(
             expected = listOf(
                 SymbolToken("*"),

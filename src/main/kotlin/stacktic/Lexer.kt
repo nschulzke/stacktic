@@ -1,8 +1,5 @@
 package stacktic
 
-import java.io.BufferedReader
-import java.io.InputStream
-
 sealed interface Token {
     val lexeme: String
 }
@@ -11,32 +8,28 @@ data class IntegerToken(override val lexeme: String) : Token
 data class DoubleToken(override val lexeme: String) : Token
 data class StringToken(override val lexeme: String) : Token
 
-class Lexer(
-    stream: InputStream,
-) {
-    private val reader: BufferedReader = stream.bufferedReader()
-    fun readLine(): List<Token> {
-        val line = reader.readLine() ?: return emptyList()
+class Lexer {
+    fun read(source: String): List<Token> {
         var currentChar = 0
         val tokens = mutableListOf<Token>()
-        while (currentChar < line.length) {
-            val char = line[currentChar]
+        while (currentChar < source.length) {
+            val char = source[currentChar]
             when {
                 char.isWhitespace() -> {
                     currentChar++
                 }
                 char.isDigit() -> {
-                    val token = readNumber(line, currentChar)
+                    val token = readNumber(source, currentChar)
                     currentChar += token.lexeme.length
                     tokens.add(token)
                 }
                 char == '"' -> {
-                    val token = readString(line, currentChar)
+                    val token = readString(source, currentChar)
                     currentChar += token.lexeme.length
                     tokens.add(token)
                 }
                 else -> {
-                    val token = readSymbol(line, currentChar)
+                    val token = readSymbol(source, currentChar)
                     currentChar += token.lexeme.length
                     tokens.add(token)
                 }
@@ -45,41 +38,41 @@ class Lexer(
         return tokens
     }
 
-    private fun readNumber(line: String, start: Int): Token {
+    private fun readNumber(source: String, start: Int): Token {
         var currentChar = start
         var foundDot = false
-        while (currentChar < line.length && (line[currentChar].isDigit() || (!foundDot && line[currentChar] == '.'))) {
-            if (line[currentChar] == '.') {
+        while (currentChar < source.length && (source[currentChar].isDigit() || (!foundDot && source[currentChar] == '.'))) {
+            if (source[currentChar] == '.') {
                 foundDot = true
             }
             currentChar++
         }
-        if (currentChar < line.length && !line[currentChar].isWhitespace()) {
-            throw Error("Unexpected character in ${if (foundDot) "DoubleToken" else "IntegerToken"}: `${line[currentChar]}`")
+        if (currentChar < source.length && !source[currentChar].isWhitespace()) {
+            throw Error("Unexpected character in ${if (foundDot) "DoubleToken" else "IntegerToken"}: `${source[currentChar]}`")
         }
         return if (foundDot) {
-            DoubleToken(line.substring(start, currentChar))
+            DoubleToken(source.substring(start, currentChar))
         } else {
-            IntegerToken(line.substring(start, currentChar))
+            IntegerToken(source.substring(start, currentChar))
         }
     }
 
-    private fun readSymbol(line: String, start: Int): Token {
+    private fun readSymbol(source: String, start: Int): Token {
         var currentChar = start
-        while (currentChar < line.length && !line[currentChar].isWhitespace()) {
+        while (currentChar < source.length && !source[currentChar].isWhitespace()) {
             currentChar++
         }
-        return SymbolToken(line.substring(start, currentChar))
+        return SymbolToken(source.substring(start, currentChar))
     }
 
-    private fun readString(line: String, start: Int): Token {
+    private fun readString(source: String, start: Int): Token {
         var currentChar = start + 1
-        while (currentChar < line.length && line[currentChar] != '"') {
+        while (currentChar < source.length && source[currentChar] != '"') {
             currentChar++
         }
-        if (line[currentChar] != '"') {
+        if (source[currentChar] != '"') {
             throw Error("Unclosed string")
         }
-        return StringToken(line.substring(start, currentChar + 1))
+        return StringToken(source.substring(start, currentChar + 1))
     }
 }
