@@ -13,7 +13,7 @@ class Interpreter(
         interpret(Lexer().read(text))
     }
 
-    fun interpret(tokens: Iterable<Token>) {
+    fun parse(tokens: Iterable<Token>): ParseTree {
         val words = mutableListOf<ParseTree>()
         val typeStack = Stack<Type>()
         for (token in tokens) {
@@ -41,7 +41,11 @@ class Interpreter(
                 }
             }
         }
-        ParseTree.of(words).execute(stack)
+        return ParseTree.of(words)
+    }
+
+    fun interpret(tokens: Iterable<Token>) {
+        parse(tokens).execute(stack)
     }
 
     companion object {
