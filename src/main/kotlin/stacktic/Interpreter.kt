@@ -9,10 +9,6 @@ class Interpreter(
 ) {
     private val stack = Stack<Value>()
 
-    fun interpret(text: String) {
-        interpret(Lexer().sequence(text).iterator())
-    }
-
     fun parse(tokens: Iterator<Token>, typeStack: Stack<Type> = Stack()): ParseTree {
         val words = mutableListOf<ParseTree>()
         while (tokens.hasNext()) {

@@ -129,4 +129,8 @@ class InterpreterTest {
         }
         assertEquals("ERROR Invalid stack effect: Expected to end with `Integer Integer`; was `Integer`", error.message)
     }
+
+    fun Interpreter.interpret(text: String) {
+        interpret(Lexer().sequence(text).iterator())
+    }
 }
