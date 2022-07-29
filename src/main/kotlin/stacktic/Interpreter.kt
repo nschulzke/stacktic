@@ -39,7 +39,7 @@ class Interpreter(
                     typeStack.pop()
                 }
                 token == Colon -> {
-                    val (definition, newToken) = parseWord(tokens, currentToken)
+                    val (definition, newToken) = parseWord(tokens, currentToken + 1)
                     currentToken = newToken
                     vocabulary.define(definition)
                 }
@@ -57,7 +57,6 @@ class Interpreter(
 
     fun parseWord(tokens: List<Token>, start: Int = 0): Pair<Vocabulary.Definition, Int> {
         var currentToken = start
-        currentToken++ // Skip colon
         val nameToken = tokens[currentToken++]
         if (nameToken !is SymbolToken) {
             throw Error("Expected symbol, got: ${nameToken.lexeme}")
