@@ -39,4 +39,40 @@ class InterpreterTest {
         }.removeSuffix("\n")
         assertEquals("3", output)
     }
+
+    @Test
+    fun `interprets addition with doubles`() {
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret("1.5 2.5 + .")
+        }.removeSuffix("\n")
+        assertEquals("4.0", output)
+    }
+
+    @Test
+    fun `interprets subtraction with doubles`() {
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret("3.5 2.5 - .")
+        }.removeSuffix("\n")
+        assertEquals("1.0", output)
+    }
+
+    @Test
+    fun `interprets multiplication with doubles`() {
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret("3.0 3.0 * .")
+        }.removeSuffix("\n")
+        assertEquals("9.0", output)
+    }
+
+    @Test
+    fun `interprets division with doubles`() {
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret("9.0 3.0 / .")
+        }.removeSuffix("\n")
+        assertEquals("3.0", output)
+    }
 }
