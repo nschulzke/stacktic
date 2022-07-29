@@ -14,26 +14,34 @@ class Interpreter(
     }
 
     fun interpret(tokens: Iterable<Token>) {
+        val words = mutableListOf<ParseTree>()
+        val typeStack = Stack<Type>()
         for (token in tokens) {
             when {
                 token is IntegerToken -> {
-                    stack.push(Value.Integer(parseInt(token.lexeme)))
+                    words.add(ParseTree.of(Value.Integer(parseInt(token.lexeme))))
+                    typeStack.push(Type.Integer)
                 }
                 token is DoubleToken -> {
-                    stack.push(Value.Double(parseDouble(token.lexeme)))
+                    words.add(ParseTree.of(Value.Double(parseDouble(token.lexeme))))
+                    typeStack.push(Type.Double)
                 }
                 token.lexeme in vocabulary -> {
-                    val definition = vocabulary.definition(token.lexeme, stack) ?: throw RuntimeException("Error, undefined function for stack: ${token.lexeme}")
-                    definition.execute(stack)
+                    val definition = vocabulary.definition(token.lexeme, typeStack)
+                        ?: throw RuntimeException("Error, undefined function: ${token.lexeme}")
+                    words.add(definition.parseTree)
+                    typeStack.take(definition.effect.before.size)
                 }
                 token == Dot -> {
-                    printLine(stack.pop().toString())
+                    words.add(prettyPrint)
+                    typeStack.pop()
                 }
                 else -> {
                     throw Error("Unknown word: ${token.lexeme}")
                 }
             }
         }
+        ParseTree.of(words).execute(stack)
     }
 
     companion object {
@@ -41,5 +49,9 @@ class Interpreter(
         val Colon = SymbolToken(":")
         val Semicolon = SymbolToken(";")
         val LParen = SymbolToken("(")
+    }
+
+    val prettyPrint: ParseTree = ParseTree.of {
+        printLine(this.pop().toString())
     }
 }

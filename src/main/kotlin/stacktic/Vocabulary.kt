@@ -2,8 +2,8 @@ package stacktic
 
 class Vocabulary {
     data class Effect(val before: List<Type>, val after: List<Type>) {
-        fun appliesTo(stack: Stack<Value>): Boolean =
-            stack.peek(before.size).map { it.type } == before
+        fun appliesTo(stack: Stack<Type>): Boolean =
+            stack.peek(before.size) == before
     }
 
     data class Definition(
@@ -75,6 +75,6 @@ class Vocabulary {
     operator fun contains(name: String): Boolean =
         name in definitions
 
-    fun definition(name: String, stack: Stack<Value>): Definition? =
+    fun definition(name: String, stack: Stack<Type>): Definition? =
         definitions[name]?.firstOrNull { it.effect.appliesTo(stack) }
 }
