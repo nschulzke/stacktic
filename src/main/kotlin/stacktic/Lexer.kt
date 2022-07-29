@@ -9,33 +9,37 @@ data class DoubleToken(override val lexeme: String) : Token
 data class StringToken(override val lexeme: String) : Token
 
 class Lexer {
-    fun read(source: String): List<Token> {
-        var currentChar = 0
-        val tokens = mutableListOf<Token>()
-        while (currentChar < source.length) {
-            val char = source[currentChar]
-            when {
-                char.isWhitespace() -> {
-                    currentChar++
-                }
-                char.isDigit() -> {
-                    val token = readNumber(source, currentChar)
-                    currentChar += token.lexeme.length
-                    tokens.add(token)
-                }
-                char == '"' -> {
-                    val token = readString(source, currentChar)
-                    currentChar += token.lexeme.length
-                    tokens.add(token)
-                }
-                else -> {
-                    val token = readSymbol(source, currentChar)
-                    currentChar += token.lexeme.length
-                    tokens.add(token)
+    fun sequence(source: String): Sequence<Token> {
+        return sequence {
+            var currentChar = 0
+            while (currentChar < source.length) {
+                val char = source[currentChar]
+                when {
+                    char.isWhitespace() -> {
+                        currentChar++
+                    }
+                    char.isDigit() -> {
+                        val token = readNumber(source, currentChar)
+                        currentChar += token.lexeme.length
+                        yield(token)
+                    }
+                    char == '"' -> {
+                        val token = readString(source, currentChar)
+                        currentChar += token.lexeme.length
+                        yield(token)
+                    }
+                    else -> {
+                        val token = readSymbol(source, currentChar)
+                        currentChar += token.lexeme.length
+                        yield(token)
+                    }
                 }
             }
         }
-        return tokens
+    }
+
+    fun read(source: String): List<Token> {
+        return sequence(source).toList()
     }
 
     private fun readNumber(source: String, start: Int): Token {
