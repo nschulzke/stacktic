@@ -6,74 +6,65 @@ class Vocabulary {
             stack.peek(before.size).map { it.type } == before
     }
 
-    sealed interface Definition {
-        val effect: Effect
-        fun execute(stack: Stack<Value>)
+    data class Definition(
+        val name: String,
+        val effect: Effect,
+        val parseTree: ParseTree,
+    ) {
+        fun execute(stack: Stack<Value>): Unit =
+            parseTree.execute(stack)
 
-        data class User(
-            val name: String,
-            override val effect: Effect,
-            val words: List<Definition>,
-        ) : Definition {
-            override fun execute(stack: Stack<Value>) {
-                words.forEach { it.execute(stack) }
-            }
-        }
-        data class BuiltIn(
-            val name: String,
-            override val effect: Effect,
-            val implementation: Stack<Value>.() -> Unit,
-        ) : Definition {
-            override fun execute(stack: Stack<Value>) {
-                stack.implementation()
-            }
-        }
+        constructor(name: String, effect: Effect, implementation: Stack<Value>.() -> Unit) : this(
+            name,
+            effect,
+            ParseTree.Leaf(implementation)
+        )
     }
 
     private val definitions: Map<String, MutableList<Definition>> = mutableMapOf(
         "+" to mutableListOf(
-            Definition.BuiltIn("+", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
+            Definition("+", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
                 val second = pop() as Value.Integer
                 val first = pop() as Value.Integer
                 push(first + second)
             },
-            Definition.BuiltIn("+", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
+            Definition("+", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
                 val second = pop() as Value.Double
                 val first = pop() as Value.Double
                 push(first + second)
             },
         ),
         "-" to mutableListOf(
-            Definition.BuiltIn("-", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
+            Definition("-", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
                 val second = pop() as Value.Integer
                 val first = pop() as Value.Integer
                 push(first - second)
             },
-            Definition.BuiltIn("-", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
+            Definition("-", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
                 val second = pop() as Value.Double
                 val first = pop() as Value.Double
                 push(first - second)
             },
         ),
         "*" to mutableListOf(
-            Definition.BuiltIn("*", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
+            Definition("*", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
                 val second = pop() as Value.Integer
                 val first = pop() as Value.Integer
                 push(first * second)
             },
-            Definition.BuiltIn("*", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
+            Definition("*", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
                 val second = pop() as Value.Double
                 val first = pop() as Value.Double
                 push(first * second)
             },
         ),
         "/" to mutableListOf(
-            Definition.BuiltIn("/", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
+            Definition("/", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
                 val second = pop() as Value.Integer
                 val first = pop() as Value.Integer
                 push(first / second)
             },
-            Definition.BuiltIn("/", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
+            Definition("/", Effect(listOf(Type.Double, Type.Double), listOf(Type.Double))) {
                 val second = pop() as Value.Double
                 val first = pop() as Value.Double
                 push(first / second)
