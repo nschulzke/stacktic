@@ -1,6 +1,7 @@
 package stacktic
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
 class InterpreterTest {
@@ -74,5 +75,58 @@ class InterpreterTest {
             interpreter.interpret("9.0 3.0 / .")
         }.removeSuffix("\n")
         assertEquals("3.0", output)
+    }
+
+    @Test
+    fun `can use a custom word`() {
+        val source = """
+            : +2 ( Integer -- Integer ) 2 + ;
+            2 +2 .
+        """.trimIndent()
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret(source)
+        }.removeSuffix("\n")
+        assertEquals("4", output)
+    }
+
+    @Test
+    fun `can use two custom words`() {
+        val source = """
+            : +2 ( Integer -- Integer ) 2 + ;
+            : -2 ( Integer -- Integer ) 2 - ;
+            2 +2 -2 .
+        """.trimIndent()
+        val output = buildString {
+            val interpreter = Interpreter { appendLine(it) }
+            interpreter.interpret(source)
+        }.removeSuffix("\n")
+        assertEquals("2", output)
+    }
+
+    @Test
+    fun `gives error if before signature doesn't match`() {
+        val source = """
+            : +2 ( Integer Integer -- Integer ) 2 + ;
+            2 +2 -2 .
+        """.trimIndent()
+        val error = assertThrows<Error> {
+            val interpreter = Interpreter()
+            interpreter.interpret(source)
+        }
+        assertEquals("ERROR Invalid stack effect: Expected to end with `Integer`; was `Integer Integer`", error.message)
+    }
+
+    @Test
+    fun `gives error if after signature doesn't match`() {
+        val source = """
+            : +2 ( Integer -- Integer Integer ) 2 + ;
+            2 +2 .
+        """.trimIndent()
+        val error = assertThrows<Error> {
+            val interpreter = Interpreter()
+            interpreter.interpret(source)
+        }
+        assertEquals("ERROR Invalid stack effect: Expected to end with `Integer Integer`; was `Integer`", error.message)
     }
 }

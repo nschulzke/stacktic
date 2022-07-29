@@ -11,6 +11,9 @@ class Vocabulary {
         val effect: Effect,
         val parseTree: ParseTree,
     ) {
+        constructor(name: String, before: List<Type>, after: List<Type>, parseTree: ParseTree) :
+            this(name, Effect(before, after), parseTree)
+
         fun execute(stack: Stack<Value>): Unit =
             parseTree.execute(stack)
 
@@ -21,7 +24,7 @@ class Vocabulary {
         )
     }
 
-    private val definitions: Map<String, MutableList<Definition>> = mutableMapOf(
+    private val definitions: MutableMap<String, MutableList<Definition>> = mutableMapOf(
         "+" to mutableListOf(
             Definition("+", Effect(listOf(Type.Integer, Type.Integer), listOf(Type.Integer))) {
                 val second = pop() as Value.Integer
@@ -71,6 +74,9 @@ class Vocabulary {
             },
         ),
     )
+
+    fun define(definition: Definition): Boolean =
+        definitions.getOrPut(definition.name) { mutableListOf() }.add(definition)
 
     operator fun contains(name: String): Boolean =
         name in definitions
