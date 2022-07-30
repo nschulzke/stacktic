@@ -7,31 +7,32 @@ class Interpreter(
     private val vocabulary: Vocabulary = Vocabulary(),
     val printLine: (String) -> Unit = ::println,
 ) {
-    private val stack = Stack<Value>()
+    private val stackStack = Stack<Stack<Value>>(listOf(Stack()))
+    private val stack get() = stackStack.peek()
 
-    fun parse(tokens: Iterator<Token>, typeStack: Stack<Type> = Stack()): ParseTree {
+    fun parse(tokens: Iterator<Token>): ParseTree {
         val words = mutableListOf<ParseTree>()
         while (tokens.hasNext()) {
             val token = tokens.next()
             when {
                 token is IntegerToken -> {
                     words.add(ParseTree.of(Value.Integer(parseInt(token.lexeme))))
-                    typeStack.push(Type.Integer)
+                    stack.push(Type.Integer)
                 }
                 token is DoubleToken -> {
                     words.add(ParseTree.of(Value.Double(parseDouble(token.lexeme))))
-                    typeStack.push(Type.Double)
+                    stack.push(Type.Double)
                 }
                 token.lexeme in vocabulary -> {
-                    val definition = vocabulary.definition(token.lexeme, typeStack)
+                    val definition = vocabulary.definition(token.lexeme, stack)
                         ?: throw RuntimeException("Error, undefined function: ${token.lexeme}")
                     words.add(definition.parseTree)
-                    typeStack.take(definition.effect.before.size)
-                    typeStack.addAll(definition.effect.after)
+                    stack.take(definition.effect.before.size)
+                    stack.addAll(definition.effect.after)
                 }
                 token == Dot -> {
                     words.add(prettyPrint)
-                    typeStack.pop()
+                    stack.pop()
                 }
                 token == Colon -> {
                     val definition = parseWord(tokens)
@@ -69,9 +70,9 @@ class Interpreter(
             if (token == RParen) break
             after.add(Type.of(token) ?: throw Error("Unknown type: $token"))
         }
-        val typeStack = Stack(before)
-        val parseTree = parse(tokens, typeStack)
-        val actualAfter = typeStack.takeAll()
+        stackStack.push(Stack(before))
+        val parseTree = parse(tokens)
+        val actualAfter = stackStack.pop().takeAll()
         if (actualAfter != after) {
             throw Error("ERROR Invalid stack effect: Expected to end with `${after.joinToString(" ")}`; was `${actualAfter.joinToString(" ")}`")
         }
@@ -79,7 +80,10 @@ class Interpreter(
     }
 
     fun interpret(tokens: Iterator<Token>) {
-        parse(tokens).execute(stack)
+        stackStack.push(Stack())
+        val tree = parse(tokens)
+        stackStack.pop()
+        tree.execute(stack)
     }
 
     companion object {
