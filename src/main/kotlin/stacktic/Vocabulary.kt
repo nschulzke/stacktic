@@ -1,9 +1,9 @@
 package stacktic
 
 class Vocabulary {
-    data class Effect(val before: List<Type>, val after: List<Type>) {
+    data class Effect(val input: List<Value>, val output: List<Value>) {
         fun appliesTo(stack: Stack<Value>): Boolean =
-            stack.peek(before.size) == before
+            stack.peek(input.size) == input
     }
 
     data class Definition(
@@ -11,8 +11,8 @@ class Vocabulary {
         val effect: Effect,
         val parseTree: ParseTree,
     ) {
-        constructor(name: String, before: List<Type>, after: List<Type>, parseTree: ParseTree) :
-            this(name, Effect(before, after), parseTree)
+        constructor(name: String, input: List<Value>, output: List<Value>, parseTree: ParseTree) :
+            this(name, Effect(input, output), parseTree)
 
         fun execute(stack: Stack<Value>): Unit =
             parseTree.execute(stack)

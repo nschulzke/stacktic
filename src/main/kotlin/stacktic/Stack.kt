@@ -27,4 +27,16 @@ class Stack<T>(
     fun peek(number: Int): List<T> = stack.takeLast(number)
     fun isEmpty() = stack.isEmpty()
     val size get() = stack.size
+
+    fun swap() {
+        val a = pop()
+        val b = pop()
+        push(a)
+        push(b)
+    }
+
+    fun dup() {
+        val a = peek()
+        push(a)
+    }
 }

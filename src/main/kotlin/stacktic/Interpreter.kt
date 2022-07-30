@@ -27,8 +27,8 @@ class Interpreter(
                     val definition = vocabulary.definition(token.lexeme, stack)
                         ?: throw RuntimeException("Error, undefined function: ${token.lexeme}")
                     words.add(definition.parseTree)
-                    stack.take(definition.effect.before.size)
-                    stack.addAll(definition.effect.after)
+                    stack.take(definition.effect.input.size)
+                    stack.addAll(definition.effect.output)
                 }
                 token == Dot -> {
                     words.add(prettyPrint)
@@ -58,25 +58,34 @@ class Interpreter(
         if (lParen != LParen) {
             throw Error("Expected (, got: ${lParen.lexeme}")
         }
-        val before = mutableListOf<Type>()
+
+        stackStack.push(Stack())
+
         while (true) {
             val token = tokens.next()
             if (token == LongDash) break
-            before.add(Type.of(token) ?: throw Error("Unknown type: $token"))
+            stack.push(Type.of(token) ?: throw Error("Unknown type: $token"))
         }
-        val after = mutableListOf<Type>()
+
+        stackStack.push(Stack())
+
         while (true) {
             val token = tokens.next()
             if (token == RParen) break
-            after.add(Type.of(token) ?: throw Error("Unknown type: $token"))
+            stack.push(Type.of(token) ?: throw Error("Unknown type: $token"))
         }
-        stackStack.push(Stack(before))
+
+        stackStack.swap()
+        stackStack.dup()
+
         val parseTree = parse(tokens)
-        val actualAfter = stackStack.pop().takeAll()
-        if (actualAfter != after) {
-            throw Error("ERROR Invalid stack effect: Expected to end with `${after.joinToString(" ")}`; was `${actualAfter.joinToString(" ")}`")
+        val actualOutput = stackStack.pop().takeAll()
+        val declaredInput = stackStack.pop().takeAll()
+        val declaredOutput = stackStack.pop().takeAll()
+        if (actualOutput != declaredOutput) {
+            throw Error("ERROR Invalid stack effect: Expected to end with `${declaredOutput.joinToString(" ")}`; was `${actualOutput.joinToString(" ")}`")
         }
-        return Vocabulary.Definition(nameToken.lexeme, before, after, parseTree)
+        return Vocabulary.Definition(nameToken.lexeme, declaredInput, declaredOutput, parseTree)
     }
 
     fun interpret(tokens: Iterator<Token>) {
